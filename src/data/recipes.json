@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "Mediterranean Chickpea Salad",
+    "tags": ["vegetarian", "high-fibre", "quick"],
+    "minutes": 10,
+    "ingredients": [
+      "1 cup chickpeas (rinsed)",
+      "1 cup cherry tomatoes (halved)",
+      "1/2 cucumber (diced)",
+      "2 tbsp olive oil",
+      "1 tbsp lemon juice"
+    ],
+    "instructions": "Combine all ingredients. Dress with olive oil and lemon. Season to taste."
+  },
+  {
+    "id": 2,
+    "title": "Oats with Berries and Seeds",
+    "tags": ["breakfast", "wholegrain", "low-cost"],
+    "minutes": 8,
+    "ingredients": [
+      "1/2 cup rolled oats",
+      "1 cup milk or alternative",
+      "1/2 cup mixed berries",
+      "1 tbsp mixed seeds"
+    ],
+    "instructions": "Cook oats in milk. Top with berries and seeds."
+  }
+]
