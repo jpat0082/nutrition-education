@@ -25,5 +25,92 @@
       "1 tbsp mixed seeds"
     ],
     "instructions": "Cook oats in milk. Top with berries and seeds."
+  },
+  {
+    "id": 3,
+    "title": "Lentil & Veggie One-Pot",
+    "tags": ["vegan", "iron", "budget"],
+    "minutes": 25,
+    "ingredients": [
+      "1 cup red lentils",
+      "1 carrot (diced)",
+      "1 zucchini (diced)",
+      "1 onion (chopped)",
+      "2 cups low-salt stock"
+    ],
+    "instructions": "Sauté onion, add veg and lentils. Add stock, simmer 15–18 min until tender."
+  },
+  {
+    "id": 4,
+    "title": "Grilled Chicken with Quinoa",
+    "tags": ["high-protein", "gluten-free"],
+    "minutes": 30,
+    "ingredients": [
+      "120g chicken breast",
+      "1/2 cup quinoa (dry)",
+      "1 cup broccoli florets",
+      "1 tsp olive oil"
+    ],
+    "instructions": "Grill chicken. Cook quinoa. Steam broccoli. Serve with a drizzle of olive oil."
+  },
+  {
+    "id": 5,
+    "title": "Tofu Stir-fry with Brown Rice",
+    "tags": ["vegan", "high-protein", "quick"],
+    "minutes": 20,
+    "ingredients": [
+      "200g firm tofu (cubed)",
+      "2 cups mixed veg",
+      "1 tbsp soy sauce (reduced salt)",
+      "1 tsp sesame oil",
+      "1 cup cooked brown rice"
+    ],
+    "instructions": "Stir-fry tofu, add veg and sauces. Serve over brown rice."
+  },
+  {
+    "id": 6,
+    "title": "Egg & Avocado Sandwich",
+    "tags": ["breakfast", "wholegrain"],
+    "minutes": 10,
+    "ingredients": ["2 slices wholegrain bread", "1 boiled egg", "1/2 avocado", "Pepper, lemon"],
+    "instructions": "Mash avocado with lemon and pepper, add sliced egg, assemble sandwich."
+  },
+  {
+    "id": 7,
+    "title": "Pumpkin & Spinach Soup",
+    "tags": ["vegetarian", "vitamin-a", "batch-cook"],
+    "minutes": 35,
+    "ingredients": ["400g pumpkin (diced)", "1 onion", "2 cups low-salt stock", "2 cups spinach"],
+    "instructions": "Simmer pumpkin, onion, stock 20–25 min. Blend. Stir in spinach to wilt."
+  },
+  {
+    "id": 8,
+    "title": "Tuna & Bean Salad",
+    "tags": ["high-protein", "omega-3", "no-cook"],
+    "minutes": 7,
+    "ingredients": [
+      "1 can tuna (springwater)",
+      "1/2 can cannellini beans",
+      "1/2 red capsicum",
+      "1 tbsp olive oil",
+      "Vinegar"
+    ],
+    "instructions": "Mix ingredients, dress with oil and vinegar, season to taste."
+  },
+  {
+    "id": 9,
+    "title": "Baked Sweet Potato with Cottage Cheese",
+    "tags": ["vegetarian", "low-cost", "potassium"],
+    "minutes": 40,
+    "ingredients": ["1 medium sweet potato", "1/2 cup cottage cheese", "Chives"],
+    "instructions": "Bake potato 35–40 min. Split and top with cottage cheese and chives."
+  },
+  {
+    "id": 10,
+    "title": "Yoghurt Parfait",
+    "tags": ["dessert", "probiotics", "quick"],
+    "minutes": 5,
+    "ingredients": ["3/4 cup plain yoghurt", "1/2 cup fruit", "2 tbsp granola"],
+    "instructions": "Layer yoghurt, fruit, and granola in a glass."
   }
 ]

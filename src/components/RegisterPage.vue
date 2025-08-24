@@ -1,10 +1,14 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">
-      <div class="card shadow-sm">
+      <div class="card">
         <div class="card-body">
-          <h2 class="h4 mb-3">Login</h2>
+          <h2 class="h4 mb-3">Register</h2>
           <form @submit.prevent="submit">
+            <div class="mb-3">
+              <label class="form-label">Full name</label>
+              <input v-model.trim="name" class="form-control" type="text" required minlength="2" />
+            </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
               <input
@@ -24,19 +28,18 @@
                 type="password"
                 required
                 minlength="8"
-                autocomplete="current-password"
+                autocomplete="new-password"
               />
+              <div class="form-text">Use 8+ chars. Demo only — don’t reuse real passwords.</div>
             </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" id="remember" v-model="remember" />
-              <label class="form-check-label" for="remember">Remember me</label>
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <select v-model="role" class="form-select" required>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-primary" :disabled="loading">Login</button>
-              <RouterLink class="btn btn-outline-secondary" to="/register"
-                >Create account</RouterLink
-              >
-            </div>
+            <button class="btn btn-success" :disabled="loading">Create Account</button>
             <p class="text-danger mt-3" v-if="err">{{ err }}</p>
           </form>
         </div>
@@ -51,9 +54,10 @@ import { useRouter } from 'vue-router'
 import { auth } from '../store/auth.js'
 
 const router = useRouter()
+const name = ref('')
 const email = ref('')
 const password = ref('')
-const remember = ref(true)
+const role = ref('user')
 const err = ref('')
 const loading = ref(false)
 
@@ -61,10 +65,16 @@ async function submit() {
   err.value = ''
   try {
     loading.value = true
-    await auth.login({ email: email.value, password: password.value, remember: remember.value })
+    await auth.register({
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      role: role.value,
+    })
+    await auth.login({ email: email.value, password: password.value, remember: true })
     router.push({ name: 'home' })
   } catch (e) {
-    err.value = e.message || 'Login failed'
+    err.value = e.message || 'Registration failed'
   } finally {
     loading.value = false
   }

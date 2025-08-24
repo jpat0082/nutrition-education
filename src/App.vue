@@ -1,6 +1,6 @@
 <template>
   <div class="min-vh-100 d-flex flex-column">
-    <Navbar />
+    <NavigationBar />
     <main class="container py-4 flex-grow-1">
       <router-view />
     </main>
@@ -11,11 +11,5 @@
 </template>
 
 <script setup>
-import Navbar from './components/NavigationBar.vue'
+import NavigationBar from './components/NavigationBar.vue'
 </script>
-
-<style scoped>
-footer {
-  background: #fafafa;
-}
-</style>
