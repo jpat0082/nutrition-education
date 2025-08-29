@@ -10,6 +10,7 @@
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Verified</th>
             </tr>
           </thead>
           <tbody>
@@ -18,6 +19,10 @@
               <td>{{ u.email }}</td>
               <td>
                 <span class="badge text-bg-dark text-uppercase">{{ u.role }}</span>
+              </td>
+              <td>
+                <span v-if="u.verified" class="text-success">Yes</span>
+                <span v-else class="text-danger">No</span>
               </td>
             </tr>
           </tbody>
@@ -34,6 +39,11 @@
 import { computed } from 'vue'
 import { auth } from '../store/auth.js'
 const users = computed(() =>
-  auth.state.users.map((u) => ({ name: u.name, email: u.email, role: u.role })),
+  auth.state.users.map((u) => ({
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    verified: u.verified,
+  })),
 )
 </script>

@@ -1,5 +1,10 @@
 <template>
-  <nav class="navbar navbar-expand-lg bg-light border-bottom">
+  <nav
+    :class="[
+      'navbar navbar-expand-lg bg-body border-bottom sticky-top',
+      { 'navbar-shadow': hasShadow },
+    ]"
+  >
     <div class="container">
       <RouterLink class="navbar-brand fw-bold" to="/">Nutrition Education</RouterLink>
 
@@ -16,40 +21,46 @@
           </li>
         </ul>
 
-        <ul class="navbar-nav ms-auto">
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            @click="onToggleTheme"
+            :title="`Theme: ${theme}`"
+          >
+            {{ theme === 'dark' ? '🌙' : '☀️' }}
+          </button>
+
           <template v-if="!user">
-            <li class="nav-item"><RouterLink class="nav-link" to="/login">Login</RouterLink></li>
-            <li class="nav-item">
-              <RouterLink class="nav-link" to="/register">Register</RouterLink>
-            </li>
+            <RouterLink class="btn btn-sm btn-outline-secondary" to="/login">Login</RouterLink>
+            <RouterLink class="btn btn-sm btn-primary" to="/register">Register</RouterLink>
           </template>
 
           <template v-else>
-            <li class="nav-item dropdown me-2">
-              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <div class="dropdown">
+              <button
+                class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+              >
                 {{ user.name }}
                 <span class="badge bg-secondary text-uppercase ms-1">{{ user.role }}</span>
-              </a>
+              </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><RouterLink class="dropdown-item" to="/profile">Profile</RouterLink></li>
                 <li><button class="dropdown-item" @click="onLogout">Logout</button></li>
               </ul>
-            </li>
-
-            <li class="nav-item">
-              <button class="btn btn-outline-danger btn-sm" @click="onLogout">Logout</button>
-            </li>
+            </div>
           </template>
-        </ul>
+        </div>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { auth } from '../store/auth.js'
+import { getTheme, toggleTheme } from '../utils/theme.js'
 
 const router = useRouter()
 const user = computed(() => auth.state.user)
@@ -57,5 +68,21 @@ function onLogout() {
   auth.logout()
   router.push({ name: 'home' })
 }
-onMounted(() => auth.seedAdmin())
+
+const theme = ref(getTheme())
+function onToggleTheme() {
+  theme.value = toggleTheme()
+}
+
+const hasShadow = ref(false)
+function onScroll() {
+  hasShadow.value = window.scrollY > 8
+}
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 </script>

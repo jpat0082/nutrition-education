@@ -1,0 +1,9 @@
+{
+  "name": "Nutrition Education",
+  "short_name": "NutritionEd",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "icons": [{ "src": "/vite.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+}

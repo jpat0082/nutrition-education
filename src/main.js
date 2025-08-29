@@ -6,6 +6,11 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 import './assets/styles.css'
-const app = createApp(App)
-app.use(router)
-app.mount('#app')
+
+import { initTheme } from './utils/theme.js'
+import { registerSW } from './pwa/registerSW.js'
+
+initTheme()
+registerSW()
+
+createApp(App).use(router).mount('#app')
