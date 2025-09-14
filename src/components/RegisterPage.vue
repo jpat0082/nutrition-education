@@ -127,6 +127,9 @@
             <p class="text-danger mt-3 mb-0" v-if="err" aria-live="polite" role="status">
               {{ err }}
             </p>
+            <p class="text-success mt-3 mb-0" v-if="ok" aria-live="polite" role="status">
+              Registered! Redirecting to login…
+            </p>
           </form>
         </div>
       </div>
@@ -137,10 +140,11 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
-import { auth } from '../store/auth.js'
 import { patterns, focusFirstInvalid, isDisposableDomain, normEmail } from '../utils/validation.js'
+import { upsertUser, findByEmail } from '@/store/userRegistry'
 
 const router = useRouter()
+
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -148,19 +152,25 @@ const confirm = ref('')
 const phone = ref('')
 const role = ref('user')
 const terms = ref(false)
+
 const submitted = ref(false)
 const loading = ref(false)
 const err = ref('')
+const ok = ref(false)
 
 const showPwd = ref(false)
 const showConfirm = ref(false)
 
-const emailTaken = computed(() => auth.state.users.some((u) => u.email === normEmail(email.value)))
+/** Check duplicates in the shared LocalStorage user registry */
+const emailTaken = computed(() => !!findByEmail(normEmail(email.value)))
 const disposable = computed(() => isDisposableDomain(email.value))
 
 async function submit() {
   submitted.value = true
   err.value = ''
+  ok.value = false
+
+  const phoneOk = !phone.value || patterns.phone10.test(phone.value) // optional phone field
   const valid =
     patterns.name.test(name.value) &&
     patterns.email.test(email.value) &&
@@ -168,7 +178,7 @@ async function submit() {
     !disposable.value &&
     patterns.passwordStrong.test(password.value) &&
     confirm.value === password.value &&
-    patterns.phone10.test(phone.value || '') &&
+    phoneOk &&
     terms.value
 
   if (!valid) {
@@ -176,17 +186,31 @@ async function submit() {
     focusFirstInvalid(document.querySelector('form'))
     return
   }
+
   try {
     loading.value = true
-    const { email: em, code } = await auth.register({
+
+    // Save into the shared user registry (used by Admin panel)
+    upsertUser({
       name: name.value,
       email: email.value,
       password: password.value,
       role: role.value,
+      disabled: false,
+      phone: phone.value || undefined,
     })
-    router.push({ name: 'verify', query: { email: em, code } })
+
+    // Remember last email/name for convenience
+    localStorage.setItem('ph_last_email', email.value)
+    localStorage.setItem('ph_last_user', name.value || email.value.split('@')[0])
+
+    ok.value = true
+    // redirect to login shortly so the user sees the success message
+    setTimeout(() => {
+      router.push({ name: 'login' })
+    }, 600)
   } catch (e) {
-    err.value = e.message || 'Registration failed'
+    err.value = e?.message || 'Registration failed'
   } finally {
     loading.value = false
   }

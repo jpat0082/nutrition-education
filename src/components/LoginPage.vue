@@ -51,9 +51,9 @@
                 id="rememberSession"
                 v-model="rememberSession"
               />
-              <label class="form-check-label" for="rememberSession"
-                >Keep me logged in (remember session)</label
-              >
+              <label class="form-check-label" for="rememberSession">
+                Keep me logged in (remember session)
+              </label>
             </div>
 
             <div class="form-check mb-3">
@@ -111,7 +111,8 @@ const needVerify = ref(false)
 
 const autoFilled = ref(false)
 
-const userEmails = computed(() => auth.state.users.map((u) => u.email).sort())
+// IMPORTANT: use auth.users (getter), not auth.state.users
+const userEmails = computed(() => (auth.users || []).map((u) => u.email).sort())
 
 onMounted(() => {
   const c = loadCredentials()
@@ -125,25 +126,32 @@ onMounted(() => {
 async function submit() {
   err.value = ''
   needVerify.value = false
+
   if (!patterns.email.test(email.value) || password.value.length < 8) {
     err.value = 'Please fix the highlighted fields.'
     focusFirstInvalid(document.querySelector('form'))
     return
   }
+
   try {
     loading.value = true
+
+    // ⬇️ This is the line you asked about (kept in the try block)
     await auth.login({
       email: email.value,
       password: password.value,
       remember: rememberSession.value,
     })
+
     if (rememberCred.value) {
       saveCredentials({ email: email.value, password: password.value })
     }
+
     const dest =
       typeof route.query.redirect === 'string' && route.query.redirect
         ? route.query.redirect
         : { name: 'recipes' }
+
     router.push(dest)
   } catch (e) {
     const msg = e?.message || ''

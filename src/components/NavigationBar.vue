@@ -8,7 +8,15 @@
     <div class="container">
       <RouterLink class="navbar-brand fw-bold" to="/">Nutrition Education</RouterLink>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#nav"
+        aria-controls="nav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -16,6 +24,16 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><RouterLink class="nav-link" to="/">Home</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link" to="/recipes">Recipes</RouterLink></li>
+
+          <!-- NEW main-site links -->
+          <li class="nav-item"><RouterLink class="nav-link" to="/tools">Tools</RouterLink></li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/planner">Meal Planner</RouterLink>
+          </li>
+          <li class="nav-item"><RouterLink class="nav-link" to="/quiz">Quiz</RouterLink></li>
+          <li class="nav-item"><RouterLink class="nav-link" to="/about">About</RouterLink></li>
+
+          <!-- Admin only -->
           <li class="nav-item" v-if="user?.role === 'admin'">
             <RouterLink class="nav-link" to="/admin">Admin</RouterLink>
           </li>
@@ -26,6 +44,7 @@
             class="btn btn-outline-secondary btn-sm"
             @click="onToggleTheme"
             :title="`Theme: ${theme}`"
+            type="button"
           >
             {{ theme === 'dark' ? '🌙' : '☀️' }}
           </button>
@@ -40,13 +59,16 @@
               <button
                 class="btn btn-sm btn-outline-secondary dropdown-toggle"
                 data-bs-toggle="dropdown"
+                type="button"
               >
                 {{ user.name }}
                 <span class="badge bg-secondary text-uppercase ms-1">{{ user.role }}</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><RouterLink class="dropdown-item" to="/profile">Profile</RouterLink></li>
-                <li><button class="dropdown-item" @click="onLogout">Logout</button></li>
+                <li>
+                  <button class="dropdown-item" @click="onLogout" type="button">Logout</button>
+                </li>
               </ul>
             </div>
           </template>
@@ -64,6 +86,7 @@ import { getTheme, toggleTheme } from '../utils/theme.js'
 
 const router = useRouter()
 const user = computed(() => auth.state.user)
+
 function onLogout() {
   auth.logout()
   router.push({ name: 'home' })
@@ -86,3 +109,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
 })
 </script>
+
+<style scoped>
+.navbar-shadow {
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+}
+</style>

@@ -1,98 +1,102 @@
 <template>
-  <div class="p-3 p-md-4 bg-body border rounded-3 mb-3">
-    <div class="row gy-3 align-items-center">
-      <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label small text-muted mb-1"
-          >Search (title, ingredients, instructions)</label
-        >
-        <input v-model.trim="q" class="form-control" placeholder="e.g., chicken, soup, basil…" />
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label small text-muted mb-1">Tags</label>
-        <div class="d-flex flex-wrap gap-2">
-          <button
-            v-for="t in allTags"
-            :key="t"
-            class="btn btn-sm"
-            :class="selectedTags.has(t) ? 'btn-success' : 'btn-outline-secondary'"
-            @click="toggleTag(t)"
-            :aria-pressed="selectedTags.has(t)"
-            type="button"
+  <div>
+    <div class="p-3 p-md-4 bg-body border rounded-3 mb-3">
+      <div class="row gy-3 align-items-center">
+        <div class="col-12 col-md-6 col-lg-4">
+          <label class="form-label small text-muted mb-1"
+            >Search (title, ingredients, instructions)</label
           >
-            {{ t }}
-          </button>
+          <input v-model.trim="q" class="form-control" placeholder="e.g., chicken, soup, basil…" />
         </div>
-      </div>
 
-      <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small text-muted mb-1">Min rating</label>
-        <select v-model.number="minRating" class="form-select">
-          <option :value="0">Any</option>
-          <option v-for="n in 5" :key="n" :value="n">{{ n }}+</option>
-        </select>
-      </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <label class="form-label small text-muted mb-1">Tags</label>
+          <div class="d-flex flex-wrap gap-2">
+            <button
+              v-for="t in allTags"
+              :key="t"
+              class="btn btn-sm"
+              :class="selectedTags.has(t) ? 'btn-success' : 'btn-outline-secondary'"
+              @click="toggleTag(t)"
+              :aria-pressed="selectedTags.has(t)"
+              type="button"
+            >
+              {{ t }}
+            </button>
+          </div>
+        </div>
 
-      <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small text-muted mb-1">Sort</label>
-        <div class="d-flex gap-2">
-          <select v-model="sortBy" class="form-select">
-            <option value="title">Title (A–Z)</option>
-            <option value="minutes">Time (asc)</option>
-            <option value="rating">Rating</option>
+        <div class="col-6 col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1">Min rating</label>
+          <select v-model.number="minRating" class="form-select">
+            <option :value="0">Any</option>
+            <option v-for="n in 5" :key="n" :value="n">{{ n }}+</option>
           </select>
+        </div>
+
+        <div class="col-6 col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1">Sort</label>
+          <div class="d-flex gap-2">
+            <select v-model="sortBy" class="form-select">
+              <option value="title">Title (A–Z)</option>
+              <option value="minutes">Time (asc)</option>
+              <option value="rating">Rating</option>
+            </select>
+            <button
+              class="btn btn-outline-secondary"
+              @click="toggleDir"
+              :title="`Order: ${sortDir}`"
+              type="button"
+            >
+              {{ sortDir === 'asc' ? '↑' : '↓' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex align-items-center gap-3">
+          <div class="form-check">
+            <input id="favOnly" class="form-check-input" type="checkbox" v-model="favsOnly" />
+            <label for="favOnly" class="form-check-label">Favourites only</label>
+          </div>
+          <button class="btn btn-sm btn-outline-dark" @click="resetFilters" type="button">
+            Reset filters
+          </button>
           <button
-            class="btn btn-outline-secondary"
-            @click="toggleDir"
-            :title="`Order: ${sortDir}`"
+            class="btn btn-sm btn-outline-primary ms-auto"
+            @click="printRecipes"
+            title="Print friendly"
             type="button"
           >
-            {{ sortDir === 'asc' ? '↑' : '↓' }}
+            Print
           </button>
         </div>
-      </div>
-
-      <div class="col-12 d-flex align-items-center gap-3">
-        <div class="form-check">
-          <input id="favOnly" class="form-check-input" type="checkbox" v-model="favsOnly" />
-          <label for="favOnly" class="form-check-label">Favourites only</label>
-        </div>
-        <button class="btn btn-sm btn-outline-dark" @click="resetFilters" type="button">
-          Reset filters
-        </button>
-        <button
-          class="btn btn-sm btn-outline-primary ms-auto"
-          @click="printRecipes"
-          title="Print friendly"
-          type="button"
-        >
-          Print
-        </button>
       </div>
     </div>
-  </div>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-    <div class="col" v-for="r in filteredSorted" :key="r.id">
-      <RecipeCard
-        :recipe="r"
-        :isFav="favSet.has(r.id)"
-        :searchTerm="q"
-        class="h-100 card-hover"
-        @reviewed="onReviewed"
-        @toggle-fav="onToggleFav"
-      />
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      <div class="col" v-for="r in filteredSorted" :key="r.id">
+        <RecipeCard
+          :recipe="r"
+          :isFav="favSet.has(r.id)"
+          :searchTerm="q"
+          class="h-100 card-hover"
+          @reviewed="onReviewed"
+          @toggle-fav="onToggleFav"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import RecipeCard from './RecipeCard.vue'
 import data from '../data/recipes.json'
 
+/* ---------------- LocalStorage keys ---------------- */
 const LS_REVIEWS = 'ne_reviews'
 const LS_FAVS = 'ne_favs'
+const ADMIN_RECIPES_KEY = 'ph_admin_recipes' // admin override
 
 function load(key, fallback) {
   try {
@@ -106,6 +110,7 @@ function save(key, val) {
   localStorage.setItem(key, JSON.stringify(val))
 }
 
+/* ---------------- State ---------------- */
 const reviewsMap = ref(load(LS_REVIEWS, {}))
 const favSet = ref(new Set(load(LS_FAVS, [])))
 
@@ -116,6 +121,29 @@ const recipes = ref(
   })),
 )
 
+/* ---- Admin override: load from localStorage + live refresh ---- */
+function loadRecipesFromAdmin() {
+  try {
+    const override = JSON.parse(localStorage.getItem(ADMIN_RECIPES_KEY) || 'null')
+    if (Array.isArray(override) && override.length) {
+      recipes.value = override.map((r) => ({
+        ...r,
+        reviews: Array.isArray(reviewsMap.value[r.id]) ? reviewsMap.value[r.id] : [],
+      }))
+    }
+  } catch {
+    //ignore
+  }
+}
+onMounted(() => {
+  loadRecipesFromAdmin()
+  window.addEventListener('storage', loadRecipesFromAdmin)
+})
+onUnmounted(() => {
+  window.removeEventListener('storage', loadRecipesFromAdmin)
+})
+
+/* ---------------- Filters / sorting ---------------- */
 const q = ref('')
 const selectedTags = ref(new Set())
 const minRating = ref(0)
@@ -197,6 +225,7 @@ function resetFilters() {
   favsOnly.value = false
 }
 
+/* ---------------- Events from child (reviews/favs) ---------------- */
 function onReviewed(payload) {
   const id = payload?.id
   const review = payload?.review
@@ -229,6 +258,7 @@ function onToggleFav(id) {
   save(LS_FAVS, Array.from(s))
 }
 
+/* ---------------- Print ---------------- */
 function printRecipes() {
   const toPrint = filteredSorted.value
   const rows = toPrint
