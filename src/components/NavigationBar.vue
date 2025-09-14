@@ -33,7 +33,6 @@
           <li class="nav-item"><RouterLink class="nav-link" to="/quiz">Quiz</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link" to="/about">About</RouterLink></li>
 
-          <!-- Admin only -->
           <li class="nav-item" v-if="user?.role === 'admin'">
             <RouterLink class="nav-link" to="/admin">Admin</RouterLink>
           </li>

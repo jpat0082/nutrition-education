@@ -1,7 +1,5 @@
-<!-- src/components/AdminUsersTable.vue -->
 <template>
   <div class="admin-users">
-    <!-- Toolbar -->
     <div class="p-3 rounded-3 border bg-body mb-3">
       <div class="row g-2 align-items-end">
         <div class="col-12 col-md-4">
@@ -30,7 +28,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="table-responsive border rounded-3">
       <table class="table table-sm align-middle mb-0">
         <thead>
@@ -80,7 +77,6 @@
       </table>
     </div>
 
-    <!-- Pager -->
     <div class="d-flex align-items-center gap-2 mt-2">
       <span class="small text-muted">Rows: {{ filtered.length }}</span>
       <div class="ms-auto d-flex gap-1">
@@ -94,7 +90,6 @@
       </div>
     </div>
 
-    <!-- Modal -->
     <div v-if="modal.open" class="modal-backdrop">
       <div class="modal-card">
         <div class="modal-header">
@@ -126,7 +121,6 @@
               </select>
             </div>
 
-            <!-- Password (optional; defaults to 1234) -->
             <div class="col-12 col-md-6">
               <label class="form-label">Password</label>
               <input v-model="modal.password" class="form-control" type="text" />
@@ -154,15 +148,12 @@ import {
   listen,
 } from '@/store/userRegistry'
 
-// ---------- sanitize (XSS safety for name/email displayed) ----------
 function sanitize(s) {
   return String(s || '').replace(/[<>]/g, (m) => ({ '<': '&lt;', '>': '&gt;' })[m])
 }
 
-// ---------- state from LocalStorage (source of truth) ----------
 const rows = ref(listUsers())
 
-// live sync if LocalStorage changes in another tab
 let unlisten = null
 onMounted(() => {
   unlisten = listen((all) => {
@@ -173,7 +164,6 @@ onBeforeUnmount(() => {
   if (unlisten) unlisten()
 })
 
-// ---------- filters/sort/paging ----------
 const q = ref('')
 const sortBy = ref('name')
 const page = ref(1)
@@ -208,7 +198,6 @@ watch([filtered, sortBy], () => {
   page.value = 1
 })
 
-// ---------- modal ----------
 const modal = reactive({
   open: false,
   id: null,
@@ -244,7 +233,6 @@ function closeModal() {
   modal.open = false
 }
 
-// ✅ Lint-safe: no unused variable; store takes care of defaults (e.g. password)
 function saveModal() {
   if (!modal.email || !modal.name) return
 
@@ -254,10 +242,10 @@ function saveModal() {
     email: sanitize(modal.email),
     role: modal.role,
     disabled: modal.disabledStr === '1',
-    password: (modal.password && String(modal.password).trim()) || undefined, // defaulted to '1234' inside registry
+    password: (modal.password && String(modal.password).trim()) || undefined,
   })
 
-  rows.value = listUsers() // refresh from store
+  rows.value = listUsers()
   modal.open = false
 }
 
@@ -281,7 +269,6 @@ function clearAll() {
   rows.value = []
 }
 
-// Import a remembered user from public app
 function importFromSession() {
   const email = localStorage.getItem('ph_last_email') || ''
   const name = localStorage.getItem('ph_last_user') || 'Imported User'
@@ -295,7 +282,6 @@ function importFromSession() {
 </script>
 
 <style scoped>
-/* Gentle “light skin tone” accents for admin */
 .table-responsive,
 .border,
 .modal-card {
@@ -303,10 +289,10 @@ function importFromSession() {
 }
 .admin-users :where(.bg-body) {
   background: rgba(250, 248, 246, 0.6);
-} /* warm tone */
+}
 .badge.text-bg-secondary {
   background-color: #c7c2ff !important;
-} /* soft indigo */
+}
 .badge.text-bg-success {
   background-color: #b4f0c5 !important;
   color: #114 !important;

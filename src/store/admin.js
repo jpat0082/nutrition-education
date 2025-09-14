@@ -1,9 +1,5 @@
-// src/store/admin.js
-// LocalStorage-backed admin data + CRUD (no external setup)
-
 import { reactive, computed } from 'vue'
 
-// ---- LocalStorage helpers ----
 const LS_USERS = 'ph_admin_users'
 const LS_RECIPES = 'ph_admin_recipes'
 
@@ -19,7 +15,6 @@ function save(key, val) {
   localStorage.setItem(key, JSON.stringify(val))
 }
 
-// ---- Seed once if empty ----
 const seedUsers = [
   {
     id: 1,
@@ -74,13 +69,11 @@ const state = reactive({
   recipes: load(LS_RECIPES, seedRecipes),
 })
 
-// persist whenever arrays are replaced
 function persist() {
   save(LS_USERS, state.users)
   save(LS_RECIPES, state.recipes)
 }
 
-// ---- USERS CRUD ----
 const usersCount = computed(() => state.users.length)
 function addUser(u) {
   const id = Math.max(0, ...state.users.map((x) => x.id)) + 1
@@ -93,11 +86,10 @@ function updateUser(id, patch) {
 }
 function deleteUser(id) {
   state.users = state.users.filter((u) => u.id !== id)
-  // cascade delete or reassign createdBy if you want; we’ll just keep as-is
+
   persist()
 }
 
-// ---- RECIPES CRUD ----
 const recipesCount = computed(() => state.recipes.length)
 function addRecipe(r) {
   const id = Math.max(0, ...state.recipes.map((x) => x.id)) + 1
@@ -117,11 +109,11 @@ export const adminStore = {
   state,
   usersCount,
   recipesCount,
-  // users
+
   addUser,
   updateUser,
   deleteUser,
-  // recipes
+
   addRecipe,
   updateRecipe,
   deleteRecipe,

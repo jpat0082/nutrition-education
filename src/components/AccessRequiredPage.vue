@@ -1,4 +1,3 @@
-<!-- src/components/AccessRequiredPage.vue -->
 <template>
   <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-lg-8">
@@ -47,7 +46,6 @@ import { useRoute, RouterLink } from 'vue-router'
 const route = useRoute()
 const target = computed(() => String(route.query.redirect || '/'))
 
-// Make a nice title based on the target path
 const prettyTarget = computed(() => {
   const p = target.value
   if (p.startsWith('/tools')) return 'Tools'

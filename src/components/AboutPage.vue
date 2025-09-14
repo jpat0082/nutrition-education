@@ -75,7 +75,7 @@ function send() {
   box.push({ email: email.value, msg: msg.value, ts: Date.now() })
   localStorage.setItem('ne_contact', JSON.stringify(box))
   ok.value = true
-  msg.value = '' // keep email
+  msg.value = ''
 }
 </script>
 

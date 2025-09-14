@@ -161,7 +161,6 @@ const ok = ref(false)
 const showPwd = ref(false)
 const showConfirm = ref(false)
 
-/** Check duplicates in the shared LocalStorage user registry */
 const emailTaken = computed(() => !!findByEmail(normEmail(email.value)))
 const disposable = computed(() => isDisposableDomain(email.value))
 
@@ -170,7 +169,7 @@ async function submit() {
   err.value = ''
   ok.value = false
 
-  const phoneOk = !phone.value || patterns.phone10.test(phone.value) // optional phone field
+  const phoneOk = !phone.value || patterns.phone10.test(phone.value)
   const valid =
     patterns.name.test(name.value) &&
     patterns.email.test(email.value) &&
@@ -190,7 +189,6 @@ async function submit() {
   try {
     loading.value = true
 
-    // Save into the shared user registry (used by Admin panel)
     upsertUser({
       name: name.value,
       email: email.value,
@@ -200,12 +198,11 @@ async function submit() {
       phone: phone.value || undefined,
     })
 
-    // Remember last email/name for convenience
     localStorage.setItem('ph_last_email', email.value)
     localStorage.setItem('ph_last_user', name.value || email.value.split('@')[0])
 
     ok.value = true
-    // redirect to login shortly so the user sees the success message
+
     setTimeout(() => {
       router.push({ name: 'login' })
     }, 600)

@@ -9,7 +9,6 @@
       </div>
     </section>
 
-    <!-- Sugar Tracker -->
     <section class="col-12 col-lg-6">
       <div class="card h-100">
         <div class="card-body">
@@ -64,7 +63,6 @@
       </div>
     </section>
 
-    <!-- BMI / Water -->
     <section class="col-12 col-lg-6">
       <div class="card h-100">
         <div class="card-body">
@@ -124,7 +122,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 
-/* sugar tracker (per day) */
 const SKEY = 'ne_tools_sugar'
 const GKEY = 'ne_tools_sugar_goal'
 const sugarGoal = ref(Number(localStorage.getItem(GKEY) || 50))
@@ -145,7 +142,6 @@ function setGoal(n) {
 watch(sugarToday, (v) => localStorage.setItem(SKEY, String(v)))
 watch(sugarGoal, (v) => localStorage.setItem(GKEY, String(v)))
 
-/* BMI + water */
 const height = ref(Number(localStorage.getItem('ne_tools_h') || 170))
 const weight = ref(Number(localStorage.getItem('ne_tools_w') || 70))
 const bmi = ref(0)

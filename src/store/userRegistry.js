@@ -1,9 +1,5 @@
-// src/store/userRegistry.js
-// A tiny LocalStorage-backed "DB" all parts of the app share.
-
 const KEY = 'ph_app_users'
 
-// read
 export function listUsers() {
   try {
     const raw = localStorage.getItem(KEY)
@@ -14,14 +10,12 @@ export function listUsers() {
   }
 }
 
-// write
 function saveUsers(arr) {
   localStorage.setItem(KEY, JSON.stringify(arr))
-  // fire a storage-like event for same-tab listeners
+
   window.dispatchEvent(new CustomEvent('ph_users_changed', { detail: arr }))
 }
 
-// upsert (create or update). If password is omitted on update, keep old.
 export function upsertUser(u) {
   const users = listUsers()
   const email = String(u.email || '')
@@ -36,8 +30,8 @@ export function upsertUser(u) {
     users[idx] = {
       ...prev,
       ...u,
-      email, // normalized
-      // keep old password unless provided
+      email,
+
       password: u.password ? String(u.password) : prev.password,
       id: prev.id ?? Date.now() + Math.random(),
     }
@@ -86,7 +80,6 @@ export function findByEmail(email) {
   return listUsers().find((u) => (u.email || '').toLowerCase() === e) || null
 }
 
-// live updates across tabs and same tab
 export function listen(cb) {
   const onLS = (ev) => {
     if (ev?.key && ev.key !== KEY) return
@@ -96,7 +89,7 @@ export function listen(cb) {
 
   window.addEventListener('storage', onLS)
   window.addEventListener('ph_users_changed', onCE)
-  // initial call
+
   cb(listUsers())
 
   return () => {

@@ -56,7 +56,6 @@ onMounted(apply)
 }
 </style>
 
-<!-- Global helper styles (add to your main.css or index.css) -->
 <style>
 html.hc {
   filter: contrast(1.15) saturate(1.05);
