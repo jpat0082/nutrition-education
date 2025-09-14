@@ -33,11 +33,13 @@
       </p>
     </div>
   </div>
+  <AdminDashboardPage />
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { auth } from '../store/auth.js'
+import AdminDashboardPage from './AdminDashboardPage.vue'
 const users = computed(() =>
   auth.state.users.map((u) => ({
     name: u.name,
