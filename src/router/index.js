@@ -18,6 +18,7 @@ import AboutPage from '../components/AboutPage.vue'
 import AccessRequiredPage from '../components/AccessRequiredPage.vue'
 
 import { auth } from '../store/auth.js'
+import AdminDashboardPage from '@/components/AdminDashboardPage.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomePage },
@@ -38,6 +39,12 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: AdminPage,
+    meta: { requiresAuth: true, adminOnly: true },
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminDashboardPage,
     meta: { requiresAuth: true, adminOnly: true },
   },
 
