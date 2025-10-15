@@ -75,6 +75,12 @@
               >
             </div>
 
+            <div class="text-center my-3">
+              <span class="text-muted">or</span>
+            </div>
+
+            <GoogleLoginButton />
+
             <p class="text-danger mt-3" v-if="err" aria-live="polite" role="status">{{ err }}</p>
 
             <div v-if="needVerify" class="mt-2">
@@ -95,6 +101,7 @@ import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { auth } from '../store/auth.js'
 import { patterns, focusFirstInvalid } from '../utils/validation.js'
 import { saveCredentials, loadCredentials } from '../utils/credentials.js'
+import GoogleLoginButton from '@/components/GoogleLoginButton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -111,7 +118,6 @@ const needVerify = ref(false)
 
 const autoFilled = ref(false)
 
-// IMPORTANT: use auth.users (getter), not auth.state.users
 const userEmails = computed(() => (auth.users || []).map((u) => u.email).sort())
 
 onMounted(() => {
@@ -135,8 +141,6 @@ async function submit() {
 
   try {
     loading.value = true
-
-    // ⬇️ This is the line you asked about (kept in the try block)
     await auth.login({
       email: email.value,
       password: password.value,

@@ -1,0 +1,224 @@
+[
+  {
+    "id": 1,
+    "title": "Margherita Pizza",
+    "tags": ["dinner", "italian", "vegetarian"],
+    "minutes": 30,
+    "ingredients": [
+      "250g pizza dough",
+      "150g fresh mozzarella",
+      "3 tbsp tomato sauce",
+      "Fresh basil leaves",
+      "Olive oil"
+    ],
+    "instructions": "Roll out the dough, spread tomato sauce, add mozzarella and basil. Drizzle with olive oil. Bake at 220°C for 10–12 minutes."
+  },
+  {
+    "id": 2,
+    "title": "Spaghetti Carbonara",
+    "tags": ["dinner", "italian", "pasta"],
+    "minutes": 25,
+    "ingredients": [
+      "200g spaghetti",
+      "100g pancetta",
+      "2 eggs",
+      "50g parmesan cheese",
+      "Black pepper"
+    ],
+    "instructions": "Cook spaghetti until al dente. Fry pancetta. Mix eggs with parmesan. Combine everything off-heat, season with pepper."
+  },
+  {
+    "id": 3,
+    "title": "Risotto alla Milanese",
+    "tags": ["dinner", "italian", "rice"],
+    "minutes": 40,
+    "ingredients": [
+      "200g arborio rice",
+      "50g butter",
+      "1 onion",
+      "1L chicken stock",
+      "Saffron threads",
+      "Parmesan cheese"
+    ],
+    "instructions": "Cook onion in butter, add rice and saffron. Gradually add stock until rice is creamy. Stir in parmesan."
+  },
+  {
+    "id": 4,
+    "title": "Butter Chicken (Murgh Makhani)",
+    "tags": ["dinner", "indian", "curry"],
+    "minutes": 45,
+    "ingredients": [
+      "500g chicken breast",
+      "200g tomato puree",
+      "100ml cream",
+      "50g butter",
+      "Spices (garam masala, cumin, chili, turmeric)"
+    ],
+    "instructions": "Marinate chicken in yogurt and spices, grill or pan-fry. Simmer in tomato puree, butter, and cream until thick."
+  },
+  {
+    "id": 5,
+    "title": "Chole Bhature",
+    "tags": ["lunch", "indian", "vegetarian"],
+    "minutes": 60,
+    "ingredients": [
+      "2 cups chickpeas",
+      "Onions",
+      "Tomatoes",
+      "Spices (cumin, garam masala)",
+      "Flour for bhature"
+    ],
+    "instructions": "Cook chickpeas with spiced gravy. Fry bhature (deep-fried flatbread). Serve together."
+  },
+  {
+    "id": 6,
+    "title": "Masala Dosa",
+    "tags": ["breakfast", "indian", "vegetarian"],
+    "minutes": 50,
+    "ingredients": [
+      "Rice-lentil batter",
+      "Potato masala filling",
+      "Onion",
+      "Green chilies",
+      "Curry leaves"
+    ],
+    "instructions": "Spread dosa batter on griddle, fill with spiced potato mixture. Serve with chutney and sambar."
+  },
+  {
+    "id": 7,
+    "title": "Pho Bo",
+    "tags": ["lunch", "vietnamese", "soup"],
+    "minutes": 60,
+    "ingredients": [
+      "200g rice noodles",
+      "300g beef slices",
+      "1L beef broth",
+      "Bean sprouts",
+      "Fresh herbs",
+      "Lime"
+    ],
+    "instructions": "Prepare aromatic beef broth with spices. Cook rice noodles separately. Serve with beef slices, sprouts, and herbs."
+  },
+  {
+    "id": 8,
+    "title": "Banh Mi",
+    "tags": ["lunch", "vietnamese", "sandwich"],
+    "minutes": 20,
+    "ingredients": [
+      "Baguette",
+      "Pork or chicken",
+      "Pickled vegetables",
+      "Cilantro",
+      "Chili",
+      "Mayonnaise"
+    ],
+    "instructions": "Stuff baguette with meat, pickles, herbs, chili, and mayo."
+  },
+  {
+    "id": 9,
+    "title": "Ramen",
+    "tags": ["dinner", "japanese", "noodles"],
+    "minutes": 50,
+    "ingredients": [
+      "200g ramen noodles",
+      "500ml chicken broth",
+      "1 boiled egg",
+      "100g sliced pork",
+      "Soy sauce",
+      "Spring onions"
+    ],
+    "instructions": "Cook noodles. Simmer broth with soy sauce. Assemble bowl with noodles, broth, pork, egg, and spring onions."
+  },
+  {
+    "id": 10,
+    "title": "Sushi Rolls",
+    "tags": ["lunch", "japanese", "seafood"],
+    "minutes": 45,
+    "ingredients": [
+      "2 cups sushi rice",
+      "Nori sheets",
+      "Fresh fish or vegetables",
+      "Soy sauce",
+      "Wasabi"
+    ],
+    "instructions": "Roll seasoned rice with fillings in nori sheets. Slice and serve with soy sauce and wasabi."
+  },
+  {
+    "id": 11,
+    "title": "Tacos al Pastor",
+    "tags": ["dinner", "mexican", "street-food"],
+    "minutes": 40,
+    "ingredients": [
+      "300g pork shoulder",
+      "Corn tortillas",
+      "Pineapple",
+      "Onion",
+      "Cilantro",
+      "Adobo spices"
+    ],
+    "instructions": "Marinate pork with adobo spices, grill with pineapple. Serve on tortillas with onion and cilantro."
+  },
+  {
+    "id": 12,
+    "title": "Guacamole",
+    "tags": ["snack", "mexican", "dip"],
+    "minutes": 10,
+    "ingredients": ["2 avocados", "1 lime", "1 tomato", "1 onion", "Cilantro", "Salt"],
+    "instructions": "Mash avocado with lime, onion, tomato, and cilantro. Season to taste."
+  },
+  {
+    "id": 13,
+    "title": "Coq au Vin",
+    "tags": ["dinner", "french", "chicken"],
+    "minutes": 90,
+    "ingredients": ["1 chicken (cut up)", "Red wine", "Mushrooms", "Onion", "Garlic", "Carrots"],
+    "instructions": "Marinate chicken in wine. Braise with vegetables until tender."
+  },
+  {
+    "id": 14,
+    "title": "Crème Brûlée",
+    "tags": ["dessert", "french"],
+    "minutes": 60,
+    "ingredients": ["500ml cream", "5 egg yolks", "100g sugar", "Vanilla", "Brown sugar"],
+    "instructions": "Make custard, bake in ramekins, chill. Caramelize sugar on top before serving."
+  },
+  {
+    "id": 15,
+    "title": "Buffalo Wings",
+    "tags": ["snack", "usa"],
+    "minutes": 30,
+    "ingredients": ["500g chicken wings", "Hot sauce", "Butter", "Celery", "Blue cheese dip"],
+    "instructions": "Fry wings, toss in sauce made with butter and hot sauce. Serve with celery and dip."
+  },
+  {
+    "id": 16,
+    "title": "Mac and Cheese",
+    "tags": ["dinner", "usa", "pasta"],
+    "minutes": 35,
+    "ingredients": ["250g macaroni", "200g cheddar cheese", "Butter", "Milk", "Breadcrumbs"],
+    "instructions": "Cook pasta, make cheese sauce with butter and milk. Mix, top with breadcrumbs, bake."
+  },
+  {
+    "id": 17,
+    "title": "Meat Pie",
+    "tags": ["lunch", "australian", "pastry"],
+    "minutes": 50,
+    "ingredients": ["Shortcrust pastry", "Beef mince", "Onion", "Gravy mix", "Egg wash"],
+    "instructions": "Cook beef filling. Line pastry cases, add filling, top with pastry. Bake until golden."
+  },
+  {
+    "id": 18,
+    "title": "Pavlova",
+    "tags": ["dessert", "australian"],
+    "minutes": 90,
+    "ingredients": [
+      "4 egg whites",
+      "200g sugar",
+      "Cornstarch",
+      "Vinegar",
+      "Whipped cream",
+      "Fruit"
+    ],
+    "instructions": "Whip egg whites with sugar, bake meringue base. Top with cream and fruit."
+  }
+]
