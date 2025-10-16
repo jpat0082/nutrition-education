@@ -23,14 +23,21 @@ function mirrorToLocal(firebaseUser) {
   return state.user
 }
 
-async function authMod() {
+async function mod() {
   const a = await getFirebaseAuth()
   const m = await import('firebase/auth')
+  await m.setPersistence(a, m.browserLocalPersistence)
   return { a, m }
 }
 
 ;(async () => {
-  const { a, m } = await authMod()
+  const { a, m } = await mod()
+  try {
+    const r = await m.getRedirectResult(a)
+    if (r?.user) mirrorToLocal(r.user)
+  } catch {
+    // ignore
+  }
   m.onAuthStateChanged(a, (fbUser) => {
     if (fbUser) mirrorToLocal(fbUser)
     else state.user = null
@@ -44,7 +51,7 @@ export const authFirebase = {
   },
 
   async register({ name, email, password, role = 'user' }) {
-    const { a, m } = await authMod()
+    const { a, m } = await mod()
     const cred = await m.createUserWithEmailAndPassword(a, email, password)
     if (name) await m.updateProfile(cred.user, { displayName: name })
     await m.sendEmailVerification(cred.user)
@@ -59,20 +66,43 @@ export const authFirebase = {
   },
 
   async login({ email, password }) {
-    const { a, m } = await authMod()
+    const { a, m } = await mod()
     const result = await m.signInWithEmailAndPassword(a, email, password)
     return mirrorToLocal(result.user)
   },
 
   async loginWithGoogle() {
-    const { a, m } = await authMod()
+    const { a, m } = await mod()
     const provider = await getGoogleProvider()
-    const result = await m.signInWithPopup(a, provider)
-    return mirrorToLocal(result.user)
+    try {
+      const res = await m.signInWithPopup(a, provider)
+      return mirrorToLocal(res.user)
+    } catch (e) {
+      const code = e?.code || ''
+      if (
+        code === 'auth/popup-blocked' ||
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request'
+      ) {
+        await m.signInWithRedirect(a, provider)
+        return
+      }
+      if (code === 'auth/unauthorized-domain') {
+        throw new Error(
+          'Unauthorized domain. Add domain in Firebase → Authentication → Settings → Authorized domains.',
+        )
+      }
+      if (code === 'auth/operation-not-allowed') {
+        throw new Error(
+          'Google provider is disabled. Enable it in Authentication → Sign-in method.',
+        )
+      }
+      throw e
+    }
   },
 
   async resendVerification(email) {
-    const { a, m } = await authMod()
+    const { a, m } = await mod()
     if (a.currentUser && normEmail(a.currentUser.email) === normEmail(email)) {
       await m.sendEmailVerification(a.currentUser)
       return { email, alreadyVerified: a.currentUser.emailVerified }
@@ -86,7 +116,12 @@ export const authFirebase = {
 
   updateProfile({ email, name }) {
     const rec = findByEmail(email)
-    if (rec) upsertUser({ ...rec, name: name || rec.name })
+    if (rec) {
+      const next = upsertUser({ ...rec, name: name || rec.name })
+      if (state.user?.email === email) {
+        state.user = { id: next.id, email: next.email, name: next.name, role: next.role }
+      }
+    }
   },
 
   async changePassword() {
@@ -96,7 +131,7 @@ export const authFirebase = {
   toggle2FA() {},
 
   async logout() {
-    const { a, m } = await authMod()
+    const { a, m } = await mod()
     await m.signOut(a)
   },
 }

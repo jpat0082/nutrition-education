@@ -1,9 +1,8 @@
-import { authFirebase } from './AuthFirebaseAdapter'
-export const auth = import.meta.env.VITE_USE_FIREBASE === '1' ? authFirebase : createLocalAuth()
-
 import { reactive } from 'vue'
-import { listUsers, findByEmail, upsertUser } from './userRegistry'
 import { isDisposableDomain, normEmail, makeCode, nowSec } from '../utils/validation.js'
+import { listUsers, findByEmail, upsertUser } from './userRegistry'
+import { authFirebase } from './AuthFirebaseAdapter'
+
 function createLocalAuth() {
   const SESSION_KEY = 'ph_session'
   const VERIFY_KEY = 'ph_verify'
@@ -19,6 +18,7 @@ function createLocalAuth() {
     if (v === null || v === undefined) localStorage.removeItem(k)
     else localStorage.setItem(k, JSON.stringify(v))
   }
+
   const state = reactive({
     user: loadJSON(SESSION_KEY, null),
     verify: loadJSON(VERIFY_KEY, {}),
@@ -30,8 +30,8 @@ function createLocalAuth() {
   function saveVerify() {
     saveJSON(VERIFY_KEY, state.verify)
   }
-  const hasAdmin = listUsers().some((u) => u.role === 'admin')
-  if (!hasAdmin)
+
+  if (!listUsers().some((u) => u.role === 'admin')) {
     upsertUser({
       name: 'Site Admin',
       email: 'admin@example.com',
@@ -41,11 +41,14 @@ function createLocalAuth() {
       verified: true,
       twoFactorEnabled: false,
     })
+  }
+
   return {
     state,
     currentUser() {
       return state.user
     },
+
     async register({ name, email, password, role = 'user' }) {
       email = normEmail(email)
       if (!email) throw new Error('Email is required.')
@@ -66,6 +69,7 @@ function createLocalAuth() {
       saveVerify()
       return { email, code }
     },
+
     async login({ email, password, remember = true }) {
       email = normEmail(email)
       const rec = findByEmail(email)
@@ -88,6 +92,7 @@ function createLocalAuth() {
         window.addEventListener('beforeunload', () => saveSession(null), { once: true })
       return session
     },
+
     complete2FA({ email, code, remember = true }) {
       email = normEmail(email)
       const p = state.pending2FA
@@ -106,12 +111,14 @@ function createLocalAuth() {
       if (!remember)
         window.addEventListener('beforeunload', () => saveSession(null), { once: true })
     },
+
     resend2FA(email) {
       const rec = findByEmail(email)
       if (!rec) throw new Error('User not found')
       state.pending2FA = { email: rec.email, otp: makeCode(), createdAtSec: nowSec() }
       return { email: rec.email, code: state.pending2FA.otp }
     },
+
     async resendVerification(email) {
       email = normEmail(email)
       const rec = findByEmail(email)
@@ -122,11 +129,11 @@ function createLocalAuth() {
       saveVerify()
       return { email, code }
     },
+
     verifyEmail({ email, code }) {
       email = normEmail(email)
       const rec = findByEmail(email)
       if (!rec) throw new Error('User not found')
-      if (rec.verified) return { ok: true, alreadyVerified: true }
       const v = state.verify[email]
       if (!v) throw new Error('No verification in progress.')
       if (String(v.code) !== String(code)) throw new Error('Invalid verification code.')
@@ -136,6 +143,7 @@ function createLocalAuth() {
       saveVerify()
       return { ok: true }
     },
+
     updateProfile({ email, name }) {
       email = normEmail(email)
       const rec = findByEmail(email)
@@ -143,9 +151,10 @@ function createLocalAuth() {
       const next = upsertUser({ ...rec, name: (name || '').trim() || rec.email })
       if (state.user?.email === email) {
         state.user = { id: next.id, email: next.email, name: next.name, role: next.role }
-        localStorage.setItem('ph_session', JSON.stringify(state.user))
+        localStorage.setItem(SESSION_KEY, JSON.stringify(state.user))
       }
     },
+
     async changePassword({ email, oldPassword, newPassword }) {
       email = normEmail(email)
       const rec = findByEmail(email)
@@ -154,18 +163,37 @@ function createLocalAuth() {
       if (!newPassword || newPassword.length < 8) throw new Error('New password too short.')
       upsertUser({ ...rec, password: String(newPassword) })
     },
+
     toggle2FA(email, enable) {
       email = normEmail(email)
       const rec = findByEmail(email)
       if (!rec) throw new Error('User not found')
       upsertUser({ ...rec, twoFactorEnabled: !!enable })
     },
+
+    async loginWithGoogle() {
+      throw new Error(
+        'Google sign-in requires Firebase. Set VITE_USE_FIREBASE=1 and restart the dev server.',
+      )
+    },
+
     logout() {
       this.state.user = null
-      localStorage.removeItem('ph_session')
+      localStorage.removeItem(SESSION_KEY)
     },
+
     get users() {
       return listUsers()
     },
   }
 }
+
+const useFirebase =
+  String(import.meta.env.VITE_USE_FIREBASE || '')
+    .trim()
+    .toLowerCase() === '1' ||
+  String(import.meta.env.VITE_USE_FIREBASE || '')
+    .trim()
+    .toLowerCase() === 'true'
+
+export const auth = useFirebase ? authFirebase : createLocalAuth()
