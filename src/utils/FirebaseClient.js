@@ -18,7 +18,8 @@ export async function getFirebaseApp() {
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
   }
-  app = getApps().length ? getApps()[0] : initializeApp(cfg)
+  const apps = getApps()
+  app = apps.length ? apps[0] : initializeApp(cfg)
   return app
 }
 
@@ -40,6 +41,25 @@ export async function googleProvider() {
 
 export async function getFirebaseDb() {
   const { getFirestore } = await import('firebase/firestore')
-  const app = await getFirebaseApp()
-  return getFirestore(app)
+  return getFirestore(await getFirebaseApp())
+}
+
+export async function getFirebaseFunctions() {
+  const { getFunctions, httpsCallable } = await import('firebase/functions')
+  const region = (import.meta.env.VITE_FIREBASE_REGION || 'us-central1').trim() || 'us-central1'
+  const fn = getFunctions(await getFirebaseApp(), region)
+  return { fn, httpsCallable }
+}
+
+if (
+  typeof window !== 'undefined' &&
+  (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+) {
+  const { connectFirestoreEmulator } = await import('firebase/firestore')
+  const { connectFunctionsEmulator } = await import('firebase/functions')
+
+  const db = await getFirebaseDb()
+  const { fn } = await getFirebaseFunctions()
+  connectFirestoreEmulator(db, '127.0.0.1', 8081)
+  connectFunctionsEmulator(fn, '127.0.0.1', 5002)
 }

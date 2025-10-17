@@ -1,25 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import HomePage from '../components/HomePage.vue'
-import RecipesPage from '../components/RecipesPage.vue'
-import LoginPage from '../components/LoginPage.vue'
-import RegisterPage from '../components/RegisterPage.vue'
-import VerifyEmailPage from '../components/VerifyEmailPage.vue'
-import ProfilePage from '../components/ProfilePage.vue'
-import AdminPage from '../components/AdminPage.vue'
-import NotFound from '../components/NotFound.vue'
-import TwoFactorPage from '../components/TwoFactorPage.vue'
-import ToolsPage from '../components/ToolsPage.vue'
-import MealPlannerPage from '../components/MealPlannerPage.vue'
-import QuizPage from '../components/QuizPage.vue'
-import AboutPage from '../components/AboutPage.vue'
-import AccessRequiredPage from '../components/AccessRequiredPage.vue'
-
+import HomePage from '@/components/HomePage.vue'
+import RecipesPage from '@/components/RecipesPage.vue'
+import LoginPage from '@/components/LoginPage.vue'
+import RegisterPage from '@/components/RegisterPage.vue'
+import VerifyEmailPage from '@/components/VerifyEmailPage.vue'
+import TwoFactorPage from '@/components/TwoFactorPage.vue'
+import ProfilePage from '@/components/ProfilePage.vue'
+import AboutPage from '@/components/AboutPage.vue'
+import ToolsPage from '@/components/ToolsPage.vue'
+import MealPlannerPage from '@/components/MealPlannerPage.vue'
+import QuizPage from '@/components/QuizPage.vue'
+import AccessRequiredPage from '@/components/AccessRequiredPage.vue'
+import BookingPage from '@/components/BookingPage.vue'
+import AdminPage from '@/components/AdminPage.vue'
 import AdminDashboardPage from '@/components/AdminDashboardPage.vue'
 
 const EventsLocations = () => import('@/components/EventsLocationsPage.vue')
+const NotFound = () => import('@/components/NotFound.vue')
 
-import { auth } from '../store/auth.js'
+import { auth } from '@/store/auth.js'
 
 const routes = [
   { path: '/', name: 'home', component: HomePage },
@@ -30,7 +30,7 @@ const routes = [
   { path: '/planner', name: 'planner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/quiz', name: 'quiz', component: QuizPage, meta: { requiresAuth: true } },
   { path: '/about', name: 'about', component: AboutPage },
-
+  { path: '/booking', name: 'booking', component: BookingPage, meta: { requiresAuth: true } },
   { path: '/login', name: 'login', component: LoginPage, meta: { guestOnly: true } },
   { path: '/register', name: 'register', component: RegisterPage, meta: { guestOnly: true } },
   { path: '/verify', name: 'verify', component: VerifyEmailPage, meta: { guestOnly: true } },
@@ -41,13 +41,13 @@ const routes = [
   {
     path: '/admin',
     name: 'admin',
-    component: AdminPage,
+    component: AdminDashboardPage,
     meta: { requiresAuth: true, adminOnly: true },
   },
   {
-    path: '/admin-dashboard',
-    name: 'admin-dashboard',
-    component: AdminDashboardPage,
+    path: '/admin-legacy',
+    name: 'admin-legacy',
+    component: AdminPage,
     meta: { requiresAuth: true, adminOnly: true },
   },
 

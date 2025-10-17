@@ -30,6 +30,10 @@
             <RouterLink class="nav-link" :to="{ name: 'events' }">Events</RouterLink>
           </li>
 
+          <li class="nav-item" v-if="isAuthed">
+            <RouterLink class="nav-link" :to="{ name: 'booking' }">Booking</RouterLink>
+          </li>
+
           <li class="nav-item">
             <RouterLink class="nav-link" to="/planner">Meal Planner</RouterLink>
           </li>
@@ -83,8 +87,8 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
-import { auth } from '../store/auth.js'
-import { getTheme, toggleTheme } from '../utils/theme.js'
+import { auth } from '@/store/auth.js'
+import { getTheme, toggleTheme } from '@/utils/theme.js'
 
 const router = useRouter()
 

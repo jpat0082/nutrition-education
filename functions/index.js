@@ -3,7 +3,6 @@ import { defineSecret } from 'firebase-functions/params'
 import admin from 'firebase-admin'
 import cors from 'cors'
 import sgMail from '@sendgrid/mail'
-
 import { createRequire } from 'node:module'
 
 admin.initializeApp()
@@ -19,7 +18,7 @@ let recipesSeed = []
 try {
   recipesSeed = require('./data/recipes.json')
 } catch {
-  //
+  /* ignore: optional seed file */
 }
 
 async function assertAuthed(auth) {
@@ -49,7 +48,7 @@ export const sendEmail = onRequest(
         sgMail.setApiKey(apiKey)
         await sgMail.send({
           to,
-          from: fromAddr,
+          from: { email: fromAddr, name: 'Public Health' },
           subject,
           text,
           html: html || undefined,
@@ -80,8 +79,17 @@ export const sendBulkEmail = onCall(
       throw new HttpsError('failed-precondition', 'SendGrid not configured')
     }
 
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fromAddr)) {
+      throw new HttpsError('invalid-argument', 'Invalid "from" email')
+    }
+
     sgMail.setApiKey(apiKey)
-    await sgMail.sendMultiple({ to, from: fromAddr, subject, html })
+    await sgMail.sendMultiple({
+      to,
+      from: { email: fromAddr, name: 'Public Health' },
+      subject,
+      html,
+    })
     return { ok: true, count: to.length }
   },
 )
@@ -178,7 +186,6 @@ export const createBooking = onCall(async (request) => {
   }
 
   const qs = await db.collection('bookings').where('end', '>', start).where('start', '<', end).get()
-
   if (!qs.empty) throw new HttpsError('already-exists', 'Time slot is taken.')
 
   const ref = await db.collection('bookings').add({

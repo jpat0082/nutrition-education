@@ -6,6 +6,7 @@
           <label class="form-label small text-muted">Search</label>
           <input v-model.trim="q" class="form-control" placeholder="title, tag, ingredient…" />
         </div>
+
         <div class="col-6 col-md-3">
           <label class="form-label small text-muted">Sort</label>
           <select v-model="sortBy" class="form-select">
@@ -14,6 +15,7 @@
             <option value="status">Status</option>
           </select>
         </div>
+
         <div class="col-6 col-md-3">
           <label class="form-label small text-muted">Status</label>
           <select v-model="statusFilter" class="form-select">
@@ -26,6 +28,7 @@
 
         <div class="col-12 d-flex gap-2">
           <button class="btn btn-primary" type="button" @click="openNew">+ New recipe</button>
+
           <button class="btn btn-outline-secondary" type="button" @click="importFromJson">
             Import from recipes.json (replace)
           </button>
@@ -34,7 +37,7 @@
             Export (filtered) CSV
           </button>
 
-          <button class="btn btn-outline-danger" type="button" @click="clearAllLocal" v-if="!isFb">
+          <button class="btn btn-outline-danger" type="button" @click="clearAllLocal">
             Clear local recipes
           </button>
         </div>
@@ -59,7 +62,12 @@
             <td class="text-truncate" style="max-width: 280px">{{ r.title }}</td>
             <td>{{ r.minutes || 0 }} min</td>
             <td>
-              <span v-for="t in r.tags" :key="t" class="badge text-bg-secondary me-1">{{ t }}</span>
+              <span
+                v-for="t in r.tags"
+                :key="`${r.id}-${t}`"
+                class="badge text-bg-secondary me-1"
+                >{{ t }}</span
+              >
             </td>
             <td>
               <span
@@ -69,8 +77,9 @@
                   'text-bg-warning': r.status === 'pending',
                   'text-bg-danger': r.status === 'discarded',
                 }"
-                >{{ r.status || 'pending' }}</span
               >
+                {{ r.status || 'pending' }}
+              </span>
             </td>
             <td>
               <div class="d-flex flex-wrap gap-1">
@@ -167,37 +176,55 @@
 <script setup>
 import { reactive, ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import seed from '@/data/recipes.json'
-import {
-  listenRecipes,
-  upsertRecipe,
-  deleteRecipe,
-  replaceAll,
-  isFirebaseMode,
-} from '@/store/recipesRepo'
 import { downloadCsv } from '@/utils/ExportHelpers'
 
-const isFb = isFirebaseMode()
-
-// live list (Firestore or local)
-const rows = ref([])
-let unlisten = null
-onMounted(async () => {
-  unlisten = await listenRecipes((list) => (rows.value = list))
-})
-onBeforeUnmount(() => {
-  if (typeof unlisten === 'function') unlisten()
-})
-
-function sanitize(s) {
-  return String(s || '').replace(/[<>]/g, (c) => ({ '<': '&lt;', '>': '&gt;' })[c])
+const LS_KEY = 'ph_admin_recipes'
+function safeParse(text, fb) {
+  try {
+    return JSON.parse(text ?? '') ?? fb
+  } catch {
+    return fb
+  }
+}
+function loadAll() {
+  return safeParse(localStorage.getItem(LS_KEY), [])
+}
+function saveAll(list) {
+  localStorage.setItem(LS_KEY, JSON.stringify(list))
 }
 
-// filters/sort/paging
+function upsert(rec) {
+  const list = loadAll()
+  const idx = list.findIndex((r) => r.id === rec.id)
+  if (idx >= 0) list[idx] = { ...list[idx], ...rec }
+  else list.push({ ...rec, id: rec.id || String(Math.random()).slice(2) })
+  saveAll(list)
+  return list
+}
+function removeById(id) {
+  const list = loadAll().filter((r) => r.id !== id)
+  saveAll(list)
+  return list
+}
+function replaceAllLocal(arr) {
+  const cleaned = Array.isArray(arr) ? arr : []
+  saveAll(cleaned)
+  return cleaned
+}
+
+const rows = ref(loadAll())
 const q = ref('')
 const statusFilter = ref('')
 const sortBy = ref('title')
 const page = ref(1)
 const pageSize = 10
+
+function onStorage(ev) {
+  if (ev.key === LS_KEY) rows.value = loadAll()
+}
+onMounted(() => window.addEventListener('storage', onStorage))
+onBeforeUnmount(() => window.removeEventListener('storage', onStorage))
+
 const filtered = computed(() => {
   const query = q.value.toLowerCase()
   return rows.value.filter((r) => {
@@ -227,7 +254,15 @@ watch([filtered, sortBy], () => {
   page.value = 1
 })
 
-// modal
+watch(
+  filtered,
+  (list) => {
+    const ev = new CustomEvent('ph_admin_recipes_filtered', { detail: list })
+    window.dispatchEvent(ev)
+  },
+  { immediate: true },
+)
+
 const modal = reactive({
   open: false,
   id: null,
@@ -266,6 +301,10 @@ function closeModal() {
   modal.open = false
 }
 
+function sanitize(s) {
+  return String(s || '').replace(/[<>]/g, (c) => ({ '<': '&lt;', '>': '&gt;' })[c])
+}
+
 async function saveModal() {
   const rec = {
     id: modal.id ?? undefined,
@@ -283,27 +322,35 @@ async function saveModal() {
     status: modal.status || 'pending',
   }
   if (!rec.title) return
-  await upsertRecipe(rec)
+  rows.value = upsert(rec)
   modal.open = false
 }
 
 async function approve(r) {
-  await upsertRecipe({ ...r, status: 'approved' })
+  rows.value = upsert({ ...r, status: 'approved' })
 }
 async function discard(r) {
-  await upsertRecipe({ ...r, status: 'discarded' })
+  rows.value = upsert({ ...r, status: 'discarded' })
 }
 async function removeRow(id) {
-  if (confirm('Delete this recipe?')) await deleteRecipe(id)
+  if (confirm('Delete this recipe?')) rows.value = removeById(id)
 }
 
 async function importFromJson() {
   if (!Array.isArray(seed) || !seed.length) return
   if (!confirm('Replace recipes with recipes.json content?')) return
-  await replaceAll(seed)
+  const cleaned = seed.map((r) => ({
+    id: r.id || String(Math.random()).slice(2),
+    title: String(r.title || ''),
+    minutes: Number(r.minutes || 0),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    ingredients: Array.isArray(r.ingredients) ? r.ingredients.map(String) : [],
+    instructions: String(r.instructions || ''),
+    status: r.status || 'approved',
+  }))
+  rows.value = replaceAllLocal(cleaned)
 }
 
-// CSV export of current filter
 function exportCsv() {
   const rowsCsv = filtered.value.map((r) => ({
     id: r.id,
@@ -316,9 +363,8 @@ function exportCsv() {
 }
 
 function clearAllLocal() {
-  if (!isFb && confirm('Clear local recipes?')) {
-    localStorage.setItem('ph_admin_recipes', '[]')
-    rows.value = []
+  if (confirm('Clear local recipes?')) {
+    rows.value = replaceAllLocal([])
   }
 }
 </script>

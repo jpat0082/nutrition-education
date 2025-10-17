@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "fit5032-jeel"
-  }
+    "default": "fit5032-jeel",
+    "staging": "fit5032-jeel"
+  },
+  "targets": {},
+  "etags": {}
 }
