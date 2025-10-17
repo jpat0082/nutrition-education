@@ -9,22 +9,24 @@ import ProfilePage from '../components/ProfilePage.vue'
 import AdminPage from '../components/AdminPage.vue'
 import NotFound from '../components/NotFound.vue'
 import TwoFactorPage from '../components/TwoFactorPage.vue'
-
 import ToolsPage from '../components/ToolsPage.vue'
 import MealPlannerPage from '../components/MealPlannerPage.vue'
 import QuizPage from '../components/QuizPage.vue'
 import AboutPage from '../components/AboutPage.vue'
-
 import AccessRequiredPage from '../components/AccessRequiredPage.vue'
 
-import { auth } from '../store/auth.js'
 import AdminDashboardPage from '@/components/AdminDashboardPage.vue'
+
+const EventsLocations = () => import('@/components/EventsLocationsPage.vue')
+
+import { auth } from '../store/auth.js'
 
 const routes = [
   { path: '/', name: 'home', component: HomePage },
   { path: '/recipes', name: 'recipes', component: RecipesPage },
 
   { path: '/tools', name: 'tools', component: ToolsPage, meta: { requiresAuth: true } },
+  { path: '/events', name: 'events', component: EventsLocations, meta: { requiresAuth: true } },
   { path: '/planner', name: 'planner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/quiz', name: 'quiz', component: QuizPage, meta: { requiresAuth: true } },
   { path: '/about', name: 'about', component: AboutPage },
@@ -35,6 +37,7 @@ const routes = [
   { path: '/2fa', name: 'twofa', component: TwoFactorPage, meta: { guestOnly: true } },
 
   { path: '/profile', name: 'profile', component: ProfilePage, meta: { requiresAuth: true } },
+
   {
     path: '/admin',
     name: 'admin',
@@ -42,8 +45,8 @@ const routes = [
     meta: { requiresAuth: true, adminOnly: true },
   },
   {
-    path: '/admin',
-    name: 'admin',
+    path: '/admin-dashboard',
+    name: 'admin-dashboard',
     component: AdminDashboardPage,
     meta: { requiresAuth: true, adminOnly: true },
   },
@@ -66,17 +69,18 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const user = auth.currentUser?.() || auth.state?.user || null
+  const isAuthed = !!user
 
-  if (to.meta?.requiresAuth && !user) {
-    return { name: 'access-required', query: { redirect: to.fullPath } }
+  if (to.meta?.requiresAuth && !isAuthed) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta?.guestOnly && isAuthed) {
+    return { name: 'recipes' }
   }
 
   if (to.meta?.adminOnly && user?.role !== 'admin') {
     return { name: 'home' }
-  }
-
-  if (to.meta?.guestOnly && user) {
-    return { name: 'recipes' }
   }
 
   return true

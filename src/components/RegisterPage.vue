@@ -4,6 +4,7 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h2 class="h4 mb-3">Create your account</h2>
+
           <form @submit.prevent="submit" novalidate>
             <div class="row g-3">
               <div class="col-12 col-md-6">
@@ -26,13 +27,14 @@
                   class="form-control"
                   :class="{
                     'is-invalid':
-                      email && (emailTaken || !patterns.email.test(email) || disposable),
+                      email &&
+                      (!patterns.email.test(email) || disposable || (emailTaken && !useFirebase)),
                   }"
                   type="email"
                   required
                   autocomplete="username"
                 />
-                <div class="invalid-feedback" v-if="emailTaken">
+                <div class="invalid-feedback" v-if="!useFirebase && emailTaken">
                   This email is already registered.
                 </div>
                 <div class="invalid-feedback" v-else-if="disposable">
@@ -128,7 +130,7 @@
               {{ err }}
             </p>
             <p class="text-success mt-3 mb-0" v-if="ok" aria-live="polite" role="status">
-              Registered! Redirecting to login…
+              Registered! Redirecting…
             </p>
           </form>
         </div>
@@ -140,10 +142,18 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
-import { patterns, focusFirstInvalid, isDisposableDomain, normEmail } from '../utils/validation.js'
-import { upsertUser, findByEmail } from '@/store/userRegistry'
+import { patterns, focusFirstInvalid, isDisposableDomain, normEmail } from '@/utils/validation.js'
+import { auth } from '@/store/auth.js'
 
 const router = useRouter()
+
+const useFirebase =
+  String(import.meta.env.VITE_USE_FIREBASE || '')
+    .trim()
+    .toLowerCase() === '1' ||
+  String(import.meta.env.VITE_USE_FIREBASE || '')
+    .trim()
+    .toLowerCase() === 'true'
 
 const name = ref('')
 const email = ref('')
@@ -161,8 +171,15 @@ const ok = ref(false)
 const showPwd = ref(false)
 const showConfirm = ref(false)
 
-const emailTaken = computed(() => !!findByEmail(normEmail(email.value)))
 const disposable = computed(() => isDisposableDomain(email.value))
+const emailTaken = computed(() => {
+  try {
+    const list = auth.users || []
+    return list.some((u) => normEmail(u.email) === normEmail(email.value))
+  } catch {
+    return false
+  }
+})
 
 async function submit() {
   submitted.value = true
@@ -173,12 +190,12 @@ async function submit() {
   const valid =
     patterns.name.test(name.value) &&
     patterns.email.test(email.value) &&
-    !emailTaken.value &&
     !disposable.value &&
     patterns.passwordStrong.test(password.value) &&
     confirm.value === password.value &&
     phoneOk &&
-    terms.value
+    terms.value &&
+    (!emailTaken.value || useFirebase)
 
   if (!valid) {
     err.value = 'Please fix the highlighted fields.'
@@ -189,23 +206,20 @@ async function submit() {
   try {
     loading.value = true
 
-    upsertUser({
+    await auth.register({
       name: name.value,
       email: email.value,
       password: password.value,
       role: role.value,
-      disabled: false,
-      phone: phone.value || undefined,
     })
+
+    await auth.login({ email: email.value, password: password.value })
 
     localStorage.setItem('ph_last_email', email.value)
     localStorage.setItem('ph_last_user', name.value || email.value.split('@')[0])
 
     ok.value = true
-
-    setTimeout(() => {
-      router.push({ name: 'login' })
-    }, 600)
+    setTimeout(() => router.push({ name: 'recipes' }), 500)
   } catch (e) {
     err.value = e?.message || 'Registration failed'
   } finally {

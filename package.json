@@ -21,6 +21,7 @@
     "dompurify": "^3.2.6",
     "firebase": "^11.10.0",
     "leaflet": "^1.9.4",
+    "mapbox-gl": "^3.15.0",
     "qrcode": "^1.5.4",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"

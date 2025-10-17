@@ -1,3 +1,4 @@
+// src/store/auth.js
 import { reactive } from 'vue'
 import { isDisposableDomain, normEmail, makeCode, nowSec } from '../utils/validation.js'
 import { listUsers, findByEmail, upsertUser } from './userRegistry'
@@ -61,7 +62,7 @@ function createLocalAuth() {
         password,
         role,
         disabled: false,
-        verified: false,
+        verified: true,
         twoFactorEnabled: false,
       })
       const code = makeCode()
@@ -75,7 +76,6 @@ function createLocalAuth() {
       const rec = findByEmail(email)
       if (!rec) throw new Error('User not found')
       if (rec.disabled) throw new Error('Account is disabled')
-      if (rec.verified === false) throw new Error('Please verify your email first.')
       if (String(rec.password) !== String(password)) throw new Error('Invalid credentials.')
       if (rec.twoFactorEnabled) {
         state.pending2FA = { email: rec.email, otp: makeCode(), createdAtSec: nowSec() }

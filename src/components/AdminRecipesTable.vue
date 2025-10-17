@@ -1,7 +1,5 @@
-<!-- src/components/AdminRecipesTable.vue -->
 <template>
   <div class="admin-recipes">
-    <!-- Toolbar -->
     <div class="p-3 rounded-3 border bg-body mb-3">
       <div class="row g-2 align-items-end">
         <div class="col-12 col-md-4">
@@ -31,14 +29,18 @@
           <button class="btn btn-outline-secondary" type="button" @click="importFromJson">
             Import from recipes.json (replace)
           </button>
-          <button class="btn btn-outline-danger ms-auto" type="button" @click="clearAll">
-            Clear all admin recipes
+
+          <button class="btn btn-outline-dark ms-auto" type="button" @click="exportCsv">
+            Export (filtered) CSV
+          </button>
+
+          <button class="btn btn-outline-danger" type="button" @click="clearAllLocal" v-if="!isFb">
+            Clear local recipes
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Table -->
     <div class="table-responsive border rounded-3">
       <table class="table table-sm align-middle mb-0">
         <thead>
@@ -67,9 +69,8 @@
                   'text-bg-warning': r.status === 'pending',
                   'text-bg-danger': r.status === 'discarded',
                 }"
+                >{{ r.status || 'pending' }}</span
               >
-                {{ r.status || 'pending' }}
-              </span>
             </td>
             <td>
               <div class="d-flex flex-wrap gap-1">
@@ -82,7 +83,11 @@
                 <button class="btn btn-sm btn-outline-secondary" type="button" @click="discard(r)">
                   Discard
                 </button>
-                <button class="btn btn-sm btn-outline-danger" type="button" @click="remove(r.id)">
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  type="button"
+                  @click="removeRow(r.id)"
+                >
                   Delete
                 </button>
               </div>
@@ -95,7 +100,6 @@
       </table>
     </div>
 
-    <!-- Pager -->
     <div class="d-flex align-items-center gap-2 mt-2">
       <span class="small text-muted">Rows: {{ filtered.length }}</span>
       <div class="ms-auto d-flex gap-1">
@@ -109,7 +113,6 @@
       </div>
     </div>
 
-    <!-- Modal -->
     <div v-if="modal.open" class="modal-backdrop">
       <div class="modal-card">
         <div class="modal-header">
@@ -162,53 +165,39 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch } from 'vue'
-import seed from '../data/recipes.json'
+import { reactive, ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import seed from '@/data/recipes.json'
+import {
+  listenRecipes,
+  upsertRecipe,
+  deleteRecipe,
+  replaceAll,
+  isFirebaseMode,
+} from '@/store/recipesRepo'
+import { downloadCsv } from '@/utils/ExportHelpers'
 
-const LS_KEY = 'ph_admin_recipes'
+const isFb = isFirebaseMode()
 
-/* ---------- util ---------- */
+// live list (Firestore or local)
+const rows = ref([])
+let unlisten = null
+onMounted(async () => {
+  unlisten = await listenRecipes((list) => (rows.value = list))
+})
+onBeforeUnmount(() => {
+  if (typeof unlisten === 'function') unlisten()
+})
+
 function sanitize(s) {
   return String(s || '').replace(/[<>]/g, (c) => ({ '<': '&lt;', '>': '&gt;' })[c])
 }
-function safeParse(key, fb) {
-  try {
-    const r = localStorage.getItem(key)
-    return r ? JSON.parse(r) : fb
-  } catch {
-    return fb
-  }
-}
-function save(key, val) {
-  localStorage.setItem(key, JSON.stringify(val))
-}
 
-/* ---------- state ---------- */
-const rows = ref(safeParse(LS_KEY, []))
-
-/* hydrate from seed if empty (one-time helper) */
-if (!Array.isArray(rows.value) || rows.value.length === 0) {
-  rows.value = (Array.isArray(seed) ? seed : []).map((r) => ({
-    id: r.id ?? Date.now() + Math.random(),
-    title: sanitize(r.title),
-    minutes: Number(r.minutes || 0),
-    tags: Array.isArray(r.tags) ? r.tags.map((t) => String(t)) : [],
-    ingredients: Array.isArray(r.ingredients) ? r.ingredients.map(sanitize) : [],
-    instructions: sanitize(r.instructions),
-    status: 'approved', // default seed as approved
-  }))
-}
-
-/* persist on change */
-watch(rows, (v) => save(LS_KEY, v), { deep: true })
-
-/* ---------- filters/sort/paging ---------- */
+// filters/sort/paging
 const q = ref('')
 const statusFilter = ref('')
 const sortBy = ref('title')
 const page = ref(1)
 const pageSize = 10
-
 const filtered = computed(() => {
   const query = q.value.toLowerCase()
   return rows.value.filter((r) => {
@@ -219,7 +208,6 @@ const filtered = computed(() => {
     return hay.includes(query)
   })
 })
-
 const sorted = computed(() => {
   const list = [...filtered.value]
   const by = sortBy.value
@@ -230,19 +218,16 @@ const sorted = computed(() => {
   })
   return list
 })
-
 const pages = computed(() => Math.max(1, Math.ceil(sorted.value.length / pageSize)))
 const i1 = computed(() => (page.value - 1) * pageSize + 1)
-const paged = computed(() => {
-  const start = (page.value - 1) * pageSize
-  return sorted.value.slice(start, start + pageSize)
-})
-
+const paged = computed(() =>
+  sorted.value.slice((page.value - 1) * pageSize, (page.value - 1) * pageSize + pageSize),
+)
 watch([filtered, sortBy], () => {
   page.value = 1
 })
 
-/* ---------- actions ---------- */
+// modal
 const modal = reactive({
   open: false,
   id: null,
@@ -253,7 +238,6 @@ const modal = reactive({
   instructions: '',
   status: 'pending',
 })
-
 function openNew() {
   Object.assign(modal, {
     open: true,
@@ -282,74 +266,61 @@ function closeModal() {
   modal.open = false
 }
 
-function saveModal() {
+async function saveModal() {
   const rec = {
-    id: modal.id ?? Date.now() + Math.random(),
+    id: modal.id ?? undefined,
     title: sanitize(modal.title),
     minutes: Number(modal.minutes || 0),
     tags: (modal.tagsCsv || '')
       .split(',')
       .map((s) => s.trim())
-      .filter(Boolean)
-      .map(sanitize),
+      .filter(Boolean),
     ingredients: (modal.ingredientsTxt || '')
       .split('\n')
       .map((s) => s.trim())
-      .filter(Boolean)
-      .map(sanitize),
+      .filter(Boolean),
     instructions: sanitize(modal.instructions),
     status: modal.status || 'pending',
   }
   if (!rec.title) return
-
-  const idx = rows.value.findIndex((x) => x.id === rec.id)
-  if (idx >= 0) rows.value[idx] = rec
-  else rows.value.unshift(rec)
-
+  await upsertRecipe(rec)
   modal.open = false
-  emitChanged()
-}
-function approve(r) {
-  r.status = 'approved'
-  emitChanged()
-}
-function discard(r) {
-  r.status = 'discarded'
-  emitChanged()
-}
-function remove(id) {
-  rows.value = rows.value.filter((x) => x.id !== id)
-  emitChanged()
 }
 
-function clearAll() {
-  if (confirm('Clear all admin recipes?')) {
+async function approve(r) {
+  await upsertRecipe({ ...r, status: 'approved' })
+}
+async function discard(r) {
+  await upsertRecipe({ ...r, status: 'discarded' })
+}
+async function removeRow(id) {
+  if (confirm('Delete this recipe?')) await deleteRecipe(id)
+}
+
+async function importFromJson() {
+  if (!Array.isArray(seed) || !seed.length) return
+  if (!confirm('Replace recipes with recipes.json content?')) return
+  await replaceAll(seed)
+}
+
+// CSV export of current filter
+function exportCsv() {
+  const rowsCsv = filtered.value.map((r) => ({
+    id: r.id,
+    title: r.title,
+    minutes: r.minutes,
+    status: r.status,
+    tags: (r.tags || []).join('|'),
+  }))
+  if (rowsCsv.length) downloadCsv(rowsCsv, 'recipes.csv')
+}
+
+function clearAllLocal() {
+  if (!isFb && confirm('Clear local recipes?')) {
+    localStorage.setItem('ph_admin_recipes', '[]')
     rows.value = []
-    emitChanged()
   }
 }
-
-/* Replace admin list with recipes.json content */
-function importFromJson() {
-  if (!Array.isArray(seed) || seed.length === 0) return
-  if (!confirm('Replace admin recipes with recipes.json content?')) return
-  rows.value = seed.map((r) => ({
-    id: r.id ?? Date.now() + Math.random(),
-    title: sanitize(r.title),
-    minutes: Number(r.minutes || 0),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-    ingredients: Array.isArray(r.ingredients) ? r.ingredients.map(sanitize) : [],
-    instructions: sanitize(r.instructions),
-    status: 'approved',
-  }))
-  emitChanged()
-}
-
-/* raises "changed" so Dashboard can recalc KPI */
-function emitChanged() {
-  emit('changed')
-}
-const emit = defineEmits(['changed'])
 </script>
 
 <style scoped>

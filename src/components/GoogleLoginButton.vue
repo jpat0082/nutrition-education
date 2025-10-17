@@ -13,16 +13,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { auth } from '@/store/auth.js'
 import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 const busy = ref(false)
 const err = ref('')
+const hasGoogle = computed(() => typeof auth.loginWithGoogle === 'function')
 
 async function go() {
   err.value = ''
+  if (!hasGoogle.value) {
+    err.value = 'Google sign-in requires Firebase mode.'
+    return
+  }
   try {
     busy.value = true
     await auth.loginWithGoogle()

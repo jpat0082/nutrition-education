@@ -24,16 +24,19 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><RouterLink class="nav-link" to="/">Home</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link" to="/recipes">Recipes</RouterLink></li>
-
-          <!-- NEW main-site links -->
           <li class="nav-item"><RouterLink class="nav-link" to="/tools">Tools</RouterLink></li>
+
+          <li v-if="isAuthed" class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'events' }">Events</RouterLink>
+          </li>
+
           <li class="nav-item">
             <RouterLink class="nav-link" to="/planner">Meal Planner</RouterLink>
           </li>
           <li class="nav-item"><RouterLink class="nav-link" to="/quiz">Quiz</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link" to="/about">About</RouterLink></li>
 
-          <li class="nav-item" v-if="user?.role === 'admin'">
+          <li v-if="user?.role === 'admin'" class="nav-item">
             <RouterLink class="nav-link" to="/admin">Admin</RouterLink>
           </li>
         </ul>
@@ -84,11 +87,16 @@ import { auth } from '../store/auth.js'
 import { getTheme, toggleTheme } from '../utils/theme.js'
 
 const router = useRouter()
-const user = computed(() => auth.state.user)
 
-function onLogout() {
-  auth.logout()
-  router.push({ name: 'home' })
+const user = computed(() => auth.currentUser?.() || auth.state?.user || null)
+const isAuthed = computed(() => !!user.value)
+
+async function onLogout() {
+  try {
+    await auth.logout?.()
+  } finally {
+    router.push({ name: 'home' })
+  }
 }
 
 const theme = ref(getTheme())

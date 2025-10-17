@@ -12,7 +12,6 @@ export function listUsers() {
 
 function saveUsers(arr) {
   localStorage.setItem(KEY, JSON.stringify(arr))
-
   window.dispatchEvent(new CustomEvent('ph_users_changed', { detail: arr }))
 }
 
@@ -31,8 +30,8 @@ export function upsertUser(u) {
       ...prev,
       ...u,
       email,
-
       password: u.password ? String(u.password) : prev.password,
+      phone: u.phone !== undefined ? String(u.phone) : prev.phone || '',
       id: prev.id ?? Date.now() + Math.random(),
     }
   } else {
@@ -42,7 +41,10 @@ export function upsertUser(u) {
       email,
       role: u.role === 'admin' ? 'admin' : 'user',
       disabled: !!u.disabled,
-      password: String(u.password || '1234'), // default for admin-created users
+      password: String(u.password || '1234'),
+      phone: u.phone ? String(u.phone) : '',
+      verified: !!u.verified,
+      twoFactorEnabled: !!u.twoFactorEnabled,
     })
   }
 
